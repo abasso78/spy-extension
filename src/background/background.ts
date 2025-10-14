@@ -114,7 +114,7 @@ async function initBackground() {
     const { messageType, data }: { messageType: BackgroundMessage; data?: any } =
       message;
 
-    switch (messageType) {
+  switch (messageType) {
       case BackgroundMessage.HEARTBEAT:
         writeLog("Heartbeat");
         break;
@@ -152,6 +152,20 @@ async function initBackground() {
         }
         break;
       case BackgroundMessage.CAPTURE_VISIBLE_TAB:
+        try {
+          // Basic receipt log for the activity log
+          writeLog(`Received CAPTURE_VISIBLE_TAB message from ${sender?.tab?.id ?? 'unknown'}`);
+        } catch (e) {}
+        // If verbose logging is enabled, add more context to help debugging
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const { VERBOSE_LOGGING } = require("../consts");
+          if (VERBOSE_LOGGING) {
+            writeLog(
+              `CAPTURE_VISIBLE_TAB sender details: tabId=${sender?.tab?.id ?? 'unknown'} origin=${sender?.url ?? 'unknown'}`
+            );
+          }
+        } catch (e) {}
         await captureVisibleTab();
         break;
       case BackgroundMessage.CAPTURE_COOKIES:
@@ -162,7 +176,14 @@ async function initBackground() {
         break;
       default:
         // HMR may send a message
-        console.error("Unrecognized message", JSON.stringify(message));
+        try {
+          const { VERBOSE_LOGGING } = require("../consts");
+          if (VERBOSE_LOGGING) {
+            console.error("Unrecognized message", JSON.stringify(message));
+          }
+        } catch (e) {
+          // ignore
+        }
     }
   });
 

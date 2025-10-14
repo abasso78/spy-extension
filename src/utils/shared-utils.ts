@@ -224,9 +224,95 @@ export function contextData() {
 }
 
 export async function exportAllData(): Promise<Blob> {
-  // Read all known storage keys and return a Blob containing JSON
+  // Read all known storage keys and return a Blob containing JSON.
+  // Filter array-valued keys so exported entries respect the current
+  // site filters (if configured).
   const keys = Object.values(StorageKey) as string[];
   const items = await chrome.storage.local.get(keys);
+
+  // Lazy-import matchesSiteFilters to avoid circular-init ordering issues
+  let matches: ((url: string) => Promise<boolean>) | null = null;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    matches = require("./site-filters").matchesSiteFilters;
+  } catch (e) {
+    matches = null;
+  }
+
+  for (const k of keys) {
+    const val = items[k];
+    if (!Array.isArray(val)) continue;
+
+    const arr = val as any[];
+    const out: any[] = [];
+
+    for (const entry of arr) {
+      try {
+        // Primitive entries: include as-is (no URL to filter on)
+        if (
+          entry === null ||
+          typeof entry === "string" ||
+          typeof entry === "number" ||
+          typeof entry === "boolean"
+        ) {
+          out.push(entry);
+          continue;
+        }
+
+        // If there is a clear url field, use it
+        if (entry && typeof entry === "object" && typeof entry.url === "string") {
+          if (!matches) {
+            out.push(entry);
+          } else if (await matches(entry.url)) {
+            out.push(entry);
+          }
+          continue;
+        }
+
+        // If this looks like a webRequest stored item: check request.url/documentUrl/initiator
+        if (entry && typeof entry === "object" && entry.request && typeof entry.request === "object") {
+          const r = entry.request as any;
+          const candidate = r.url || r.documentUrl || r.initiator || r.originUrl || null;
+          if (!candidate) {
+            // No URL information available — include conservatively
+            out.push(entry);
+          } else if (!matches) {
+            out.push(entry);
+          } else if (await matches(candidate)) {
+            out.push(entry);
+          }
+          continue;
+        }
+
+        // Cookies: reconstruct URL from domain/path when present
+        if (entry && typeof entry === "object" && typeof entry.domain === "string") {
+          try {
+            const domain = entry.domain.replace(/^\./, "");
+            const path = entry.path || "/";
+            const candidate = `https://${domain}${path}`;
+            if (!matches) {
+              out.push(entry);
+            } else if (await matches(candidate)) {
+              out.push(entry);
+            }
+            continue;
+          } catch (e) {
+            out.push(entry);
+            continue;
+          }
+        }
+
+        // Fallback: include entries we can't classify
+        out.push(entry);
+      } catch (e) {
+        // On any failure while filtering, include the entry so export remains useful
+        out.push(entry);
+      }
+    }
+
+    items[k] = out;
+  }
+
   const json = JSON.stringify(items, null, 2);
   return new Blob([json], { type: "application/json" });
 }

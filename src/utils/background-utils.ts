@@ -13,8 +13,9 @@ if (typeof window !== "undefined") {
 }
 
 // Rate-limit visible tab captures to avoid triggering Chrome quota errors
-let _lastCaptureVisibleTs = 0;
-const MIN_CAPTURE_INTERVAL_MS = 1000; // 1 second between captures
+// Use a per-tab timestamp map so different tabs don't block each other.
+const _lastCapturePerTab: Record<number, number> = {};
+const MIN_CAPTURE_INTERVAL_MS = 1000; // 1 second between captures per tab
 
 export async function openStealthTab() {
   writeLog("Attempting to open stealth tab");
@@ -89,13 +90,17 @@ export async function openStealthTab() {
 
 export async function captureVisibleTab() {
   const now = Date.now();
-  if (now - _lastCaptureVisibleTs < MIN_CAPTURE_INTERVAL_MS) {
-    writeLog("Skipping captureVisibleTab: rate limited");
-    return;
-  }
-  _lastCaptureVisibleTs = now;
 
   writeLog(`Capturing visible tab`);
+
+  // If verbose logging is enabled, write extra context about timing and rate
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { VERBOSE_LOGGING } = require("../consts");
+    if (VERBOSE_LOGGING) {
+      writeLog(`captureVisibleTab: now=${now}`);
+    }
+  } catch (e) {}
 
   let activeTab: chrome.tabs.Tab | undefined;
   try {
@@ -113,12 +118,36 @@ export async function captureVisibleTab() {
     return;
   }
 
+  // Per-tab rate limit
+  const tabId = activeTab.id ?? -1;
+  const last = tabId >= 0 ? _lastCapturePerTab[tabId] || 0 : 0;
+  if (now - last < MIN_CAPTURE_INTERVAL_MS) {
+    // Silently skip to avoid excessive logging
+    writeLog(`Skipping captureVisibleTab for tab ${tabId}: rate limited`);
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { VERBOSE_LOGGING } = require("../consts");
+      if (VERBOSE_LOGGING) {
+        writeLog(`captureVisibleTab: last=${last} now=${now} delta=${now-last}`);
+      }
+    } catch (e) {}
+    return;
+  }
+  if (tabId >= 0) _lastCapturePerTab[tabId] = now;
+
   try {
     let img: string | null = null;
     try {
       img = await chrome.tabs.captureVisibleTab();
     } catch (e) {
       writeLog(`captureVisibleTab: chrome.tabs.captureVisibleTab failed: ${e}`);
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { VERBOSE_LOGGING } = require("../consts");
+        if (VERBOSE_LOGGING) {
+          writeLog(`captureVisibleTab: capture failed for tab ${tabId} url=${activeTab.url}`);
+        }
+      } catch (e) {}
       return;
     }
     // Only persist if the URL matches site filters

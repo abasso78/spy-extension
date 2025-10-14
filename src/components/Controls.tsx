@@ -9,23 +9,38 @@ export default function Controls() {
 
   const [links, setLinks] = useState<[string, string][]>([]);
   const [selectedHref, setSelectedHref] = useState<string | null>(null);
+  const selectedRef = React.useRef<string | null>(null);
 
   useEffect(() => {
-    function updateLinks() {
+    let savedSelected: string | null = null;
+
+    async function updateLinks() {
       const found = [...document.querySelectorAll("h1[id]")].map((el) => [
         el.textContent as string,
         `#${el.getAttribute("id")}`,
       ] as [string, string]);
       setLinks(found);
-      // If nothing selected yet, default to the first section (if any)
-      if (!selectedHref) {
-        const first = found.length > 0 ? found[0][1] : null;
+      // If nothing selected yet, try to restore from storage or default to the first
+      const currentSelected = selectedRef.current;
+      if (!currentSelected) {
+        let first: string | null = null;
+        if (savedSelected) {
+          const exists = found.find((f) => f[1] === savedSelected);
+          if (exists) first = savedSelected;
+        }
+        if (!first) first = found.length > 0 ? found[0][1] : null;
+        selectedRef.current = first;
         setSelectedHref(first);
         // apply collapsing after a short tick so DOM settles
         setTimeout(() => collapseAllExcept(first), 0);
       } else {
-        // ensure existing selection stays collapsed/expanded
-        setTimeout(() => collapseAllExcept(selectedHref), 0);
+        // ensure existing selection stays collapsed/expanded; if selection no
+        // longer exists, fall back to the first found heading.
+        const exists = found.find((f) => f[1] === currentSelected);
+        const use = exists ? currentSelected : found.length > 0 ? found[0][1] : null;
+        selectedRef.current = use;
+        setSelectedHref(use);
+        setTimeout(() => collapseAllExcept(use), 0);
       }
     }
 
@@ -41,7 +56,16 @@ export default function Controls() {
       };
     };
 
-    updateLinks();
+    // Read persisted selection from storage and then initialize links
+    (async () => {
+      try {
+        const res = await chrome.storage.local.get(["lastSelectedHref"]);
+        savedSelected = res.lastSelectedHref ?? null;
+      } catch (e) {
+        savedSelected = null;
+      }
+      updateLinks();
+    })();
 
     const observer = new MutationObserver(
       debounce(() => {
@@ -83,12 +107,18 @@ export default function Controls() {
   // handle click on a navigation link
   function onNavClick(e: React.MouseEvent, href: string) {
     e.preventDefault();
+    selectedRef.current = href;
     setSelectedHref(href);
     collapseAllExcept(href);
     const target = document.querySelector(href) as HTMLElement | null;
     if (target) {
       // smooth scroll the heading into view
       target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    try {
+      chrome.storage.local.set({ lastSelectedHref: href });
+    } catch (e) {
+      // ignore
     }
   }
 

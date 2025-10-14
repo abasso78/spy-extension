@@ -48,3 +48,10 @@ export enum SearchParamKey {
   FAVICON_URL = "faviconUrl",
   TITLE = "title",
 }
+
+// Interval between automatic screenshot captures initiated from content script
+export const SCREENSHOT_INTERVAL_MS = 30 * 1000; // 60 seconds
+
+// Toggle to enable more verbose background/service-worker logging for
+// difficult-to-reproduce issues. Leave false for normal operation.
+export const VERBOSE_LOGGING = false;
