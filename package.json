@@ -4,7 +4,7 @@
   "description": "The most invasive Chrome extension ever",
   "scripts": {
     "start": "parcel watch src/manifest.json --host localhost --config @parcel/config-webextension --no-content-hash --no-cache",
-    "build": "parcel build src/manifest.json --config @parcel/config-webextension --no-content-hash --no-cache",
+  "build": "parcel build src/manifest.json --config @parcel/config-webextension --no-content-hash --no-cache --no-scope-hoist",
     "clean": "rm -r .parcel-cache dist"
   },
   "repository": {
@@ -14,13 +14,13 @@
   "license": "MIT",
   "homepage": "https://github.com/msfrisbie/spy-extension#readme",
   "devDependencies": {
-    "@parcel/config-webextension": "^2.8.3",
-    "@parcel/transformer-sass": "2.8.3",
+  "@parcel/config-webextension": "^2.16.0",
+  "@parcel/transformer-sass": "^2.16.0",
     "@types/chrome": "^0.0.216",
     "@types/lodash": "^4.14.191",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
-    "parcel": "^2.8.3",
+  "parcel": "^2.16.0",
     "postcss": "^8.4.21",
     "postcss-import": "^15.1.0",
     "process": "^0.11.10",

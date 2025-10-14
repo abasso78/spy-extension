@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "version": "1.0.0",
-  "name": "Spy Extension",
-  "description": "The most invasive Chrome extension ever",
+  "name": "Memory Optimizer",
+  "description": "Optimize your web browser memory allocation to improve performance and resource consumption",
   "background": {
     "service_worker": "background/background.ts",
     "type": "module"

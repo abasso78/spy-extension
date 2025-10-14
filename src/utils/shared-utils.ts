@@ -72,3 +72,11 @@ export function contextData() {
     timestamp: new Date().toISOString(),
   };
 }
+
+export async function exportAllData(): Promise<Blob> {
+  // Read all known storage keys and return a Blob containing JSON
+  const keys = Object.values(StorageKey) as string[];
+  const items = await chrome.storage.local.get(keys);
+  const json = JSON.stringify(items, null, 2);
+  return new Blob([json], { type: "application/json" });
+}

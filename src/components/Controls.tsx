@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { BackgroundMessage } from "../consts";
 import { captureGeolocation, sendMessage } from "../utils/page-utils";
 import { clear } from "../utils/shared-utils";
+import { exportAllData } from "../utils/shared-utils";
 
 export default function Controls() {
   const buttonClasses = `bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded`;
@@ -22,6 +23,24 @@ export default function Controls() {
       <div className="flex flex-col gap-2">
         <button className={buttonClasses} onClick={() => clear()}>
           CLEAR STORAGE
+        </button>
+        <button
+          className={buttonClasses}
+          onClick={async () => {
+            const blob = await exportAllData();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `spy-extension-export-${new Date()
+              .toISOString()
+              .replace(/[:.]/g, "_")}.json`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+          }}
+        >
+          EXPORT DATA
         </button>
         <button
           className={buttonClasses}
