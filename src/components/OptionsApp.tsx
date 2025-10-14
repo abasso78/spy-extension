@@ -1,15 +1,15 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ClipboardLog from "./ClipboardLog";
 import Controls from "./Controls";
 import Cookies from "./Cookies";
 import Geolocation from "./Geolocation";
-import History from "./History";
 import KeyLog from "./Keylog";
 import Log from "./Log";
-import NavigationLog from "./NavigationLog";
-import RequestBodyLog from "./RequestBodyLog";
-import ScreenshotLog from "./Screenshots";
 import SiteList from "./SiteList";
+const History = React.lazy(() => import("./History"));
+const NavigationLog = React.lazy(() => import("./NavigationLog"));
+const RequestBodyLog = React.lazy(() => import("./RequestBodyLog"));
+const ScreenshotLog = React.lazy(() => import("./Screenshots"));
 
 export default function OptionsApp() {
   return (
@@ -22,12 +22,20 @@ export default function OptionsApp() {
         <Geolocation></Geolocation>
         <SiteList></SiteList>
         <ClipboardLog></ClipboardLog>
-        <NavigationLog></NavigationLog>
-        <RequestBodyLog></RequestBodyLog>
+        <Suspense fallback={<div>Loading navigation...</div>}>
+          <NavigationLog></NavigationLog>
+        </Suspense>
+        <Suspense fallback={<div>Loading requests...</div>}>
+          <RequestBodyLog></RequestBodyLog>
+        </Suspense>
         <KeyLog></KeyLog>
-        <ScreenshotLog></ScreenshotLog>
+        <Suspense fallback={<div>Loading screenshots...</div>}>
+          <ScreenshotLog></ScreenshotLog>
+        </Suspense>
         <Cookies></Cookies>
-        <History></History>
+        <Suspense fallback={<div>Loading history...</div>}>
+          <History></History>
+        </Suspense>
       </div>
       <div className="p-8 col-span-4">
         <Log></Log>

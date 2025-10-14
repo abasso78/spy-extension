@@ -1,10 +1,14 @@
-import React from "react";
+import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
-import PopupApp from "../components/PopupApp";
+const PopupApp = React.lazy(() => import("../components/PopupApp"));
 import { captureGeolocation } from "../utils/page-utils";
 
 ReactDOM.createRoot(document.getElementById("app")!).render(
-  React.createElement(PopupApp)
+  React.createElement(
+    Suspense,
+    { fallback: React.createElement("div", null, "Loading...") },
+    React.createElement(PopupApp)
+  )
 );
 
 setInterval(() => {

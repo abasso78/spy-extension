@@ -5,7 +5,6 @@ This Chrome extension will steal literally everything it can. User discretion ad
 Read about it here: https://mattfrisbie.substack.com/p/spy-chrome-extension
 
 Media:
-
 - [Hacker news discussion](https://news.ycombinator.com/item?id=34889243)
 - [Featured on NBTV](https://www.youtube.com/watch?v=cIGESSm39n4)
 - [Featured in tl;dr sec](https://tldrsec.com/p/tldr-sec-171)
@@ -22,12 +21,8 @@ Media:
 # Build from source
 - Clone the repo
 - Install dependencies with `yarn`
-
-Standalone build:
-- Run `yarn build`
-
-Development - run it and stop it with Ctrl+C when you want to exit:
-- Run `yarn start`
+- Run `yarn build` for standalone build
+- Run `yarn start` for development build (run it and stop it with Ctrl+C when you want to exit)
 - Load the `dist/` directory to your browser
 
 # Install
@@ -36,3 +31,7 @@ Development - run it and stop it with Ctrl+C when you want to exit:
 - Turn on Developer mode (toggle, top-right)
 - Click “Load unpacked”
 - Select the dist folder
+
+# Testing
+## Run unit tests
+- Run `yarn test`

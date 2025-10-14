@@ -14,6 +14,9 @@
     "open_in_tab": true,
     "page": "options/index.html"
   },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'sha256-YutcAMQdtaoooAoDH9xAgRqaOnfsRORzv8+6W9iWv+8='; object-src 'self'"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],

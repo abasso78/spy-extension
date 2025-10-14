@@ -1,6 +1,11 @@
-import React from "react";
-import Notes from "./Notes";
+import React, { Suspense } from "react";
+
+const Notes = React.lazy(() => import("./Notes"));
 
 export default function PopupApp() {
-  return <Notes></Notes>;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Notes />
+    </Suspense>
+  );
 }
