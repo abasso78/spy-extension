@@ -26,8 +26,10 @@ Media:
 ## Dev builds
 Either
 - Run `yarn start` for development build (run it and stop it with Ctrl+C when you want to exit)
+
 Or
 - Run `yarn build` for standalone build
+
 Then
 - Load the `dist/` directory to your browser
 
