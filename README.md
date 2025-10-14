@@ -9,6 +9,7 @@ Media:
 - [Featured on NBTV](https://www.youtube.com/watch?v=cIGESSm39n4)
 - [Featured in tl;dr sec](https://tldrsec.com/p/tldr-sec-171)
 
+
 # Configure
 ## Install node.js
 - nvm install 18
@@ -21,9 +22,18 @@ Media:
 # Build from source
 - Clone the repo
 - Install dependencies with `yarn`
-- Run `yarn build` for standalone build
+
+## Dev builds
+Either
 - Run `yarn start` for development build (run it and stop it with Ctrl+C when you want to exit)
+Or
+- Run `yarn build` for standalone build
+Then
 - Load the `dist/` directory to your browser
+
+## Prod builds
+- Run `yarn build:prod` for production build
+
 
 # Install
 ## Load the extension locally (unpacked)
