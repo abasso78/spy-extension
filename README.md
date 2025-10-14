@@ -23,10 +23,10 @@ Media:
 - Clone the repo
 - Install dependencies with `yarn`
 
-One-off build:
+Standalone build:
 - Run `yarn build`
 
-Dev/watch: run it and stop it with Ctrl+C when you want to exit:
+Development - run it and stop it with Ctrl+C when you want to exit:
 - Run `yarn start`
 - Load the `dist/` directory to your browser
 
