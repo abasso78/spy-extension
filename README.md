@@ -47,3 +47,25 @@ Then
 # Testing
 ## Run unit tests
 - Run `yarn test`
+
+# Notes
+
+## importmap externalizer and packaged ZIP
+
+After building the project Parcel inlines importmaps into the HTML which violates the extension CSP. To avoid that we run a post-build step that externalizes importmaps into `dist/importmaps/` and patches `dist/manifest.json` so pages may load them. There are two helpers in `scripts/`:
+
+- `scripts/update-dist-manifest-importmap-hash.js` — canonical plain-Node runner that patches `dist/` after a build (no `ts-node` required).
+- `scripts/zip-dist.js` — zips the `dist/` folder into `extension.zip` at the repository root.
+
+Typical prod build and package flow (from repo root):
+
+```bash
+# build (Parcel)
+yarn build:prod
+
+# or if ts-node is not available, run the fallback and zip manually
+node scripts/update-dist-manifest-importmap-hash.run.js dist
+node scripts/zip-dist.js dist ./extension.zip
+```
+
+Then load the produced `extension.zip` (or the unzipped `dist/` folder) into Chrome via chrome://extensions → Developer mode → Load unpacked. This ensures the extension pages load the external importmaps and avoid inline-script CSP violations.

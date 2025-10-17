@@ -3,3 +3,4 @@ dist/
 node_modules/
 .parcel-cache/
 default.html
+extension.zip

@@ -4,9 +4,9 @@
   "description": "The most invasive Chrome extension ever",
   "scripts": {
     "start": "parcel watch src/manifest.json --host localhost --config @parcel/config-webextension --no-content-hash --no-cache",
-    "build": "parcel build src/manifest.json --config @parcel/config-webextension --no-content-hash --no-cache --no-scope-hoist && node scripts/update-dist-manifest-importmap-hash.js",
-    "build:prod": "cross-env NODE_ENV=production parcel build src/manifest.json --config @parcel/config-webextension --dist-dir dist --public-url ./ --no-scope-hoist && node scripts/update-dist-manifest-importmap-hash.js",
-    "analyze": "cross-env NODE_ENV=production parcel build src/manifest.json --config @parcel/config-webextension --dist-dir dist --public-url ./ --no-scope-hoist --reporter @parcel/reporter-bundle-analyzer",
+  "build": "parcel build src/manifest.json --config @parcel/config-webextension --no-content-hash --no-cache --no-scope-hoist && node scripts/update-dist-manifest-importmap-hash.js dist",
+  "build:prod": "cross-env NODE_ENV=production parcel build src/manifest.json --config @parcel/config-webextension --dist-dir dist --public-url ./ --no-scope-hoist && node scripts/update-dist-manifest-importmap-hash.js dist && node scripts/zip-dist.js dist ../extension.zip",
+  "analyze": "cross-env NODE_ENV=production parcel build src/manifest.json --config @parcel/config-webextension --dist-dir dist --public-url ./ --no-scope-hoist --reporter @parcel/reporter-bundle-analyzer && node scripts/update-dist-manifest-importmap-hash.js dist",
     "test": "jest",
     "clean": "rm -r .parcel-cache dist"
   },
@@ -35,6 +35,9 @@
     "source-map-explorer": "^2.5.3",
     "tailwindcss": "^3.2.7",
     "ts-jest": "^29.1.0",
+    
+  "archiver": "^5.3.1",
+  "@types/node": "^20.4.2",
     "typescript": "^4.9.5"
   },
   "dependencies": {

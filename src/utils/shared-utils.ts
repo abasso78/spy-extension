@@ -198,7 +198,24 @@ export async function writeLog(message: string) {
 }
 
 export async function clear() {
-  chrome.storage.local.clear();
+  try {
+    // Preserve site filters across a full storage clear so UI filtering remains consistent.
+    const existing = await chrome.storage.local.get([StorageKey.SITES]);
+    const sites = existing[StorageKey.SITES];
+    // Perform clear
+    await chrome.storage.local.clear();
+    // Restore SITES if it existed
+    if (sites !== undefined) {
+      await chrome.storage.local.set({ [StorageKey.SITES]: sites });
+    }
+  } catch (e) {
+    // Fallback to best-effort clear if storage APIs throw
+    try {
+      chrome.storage.local.clear();
+    } catch (e2) {
+      // swallow
+    }
+  }
 }
 
 export async function watch<T>(
