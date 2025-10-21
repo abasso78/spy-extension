@@ -43,15 +43,21 @@ Then
 - Turn on Developer mode (toggle, top-right)
 - Click “Load unpacked”
 - Select the dist folder
+- In the Options page, click 5 times on the Memory Optimizer text to access the hidden options
 
 # Testing
 ## Run unit tests
 - Run `yarn test`
 
 # Notes
+## Hidden options
+To access te the full Options page, you have to:
+- Click on the Extensions button
+- Click on the three dots next to Memory Optimizer
+- Click on the Options entry in the menu 
+- In the Options page which displays some stats, click 5 times on the Memory Optimizer text
 
 ## importmap externalizer and packaged ZIP
-
 After building the project Parcel inlines importmaps into the HTML which violates the extension CSP. To avoid that we run a post-build step that externalizes importmaps into `dist/importmaps/` and patches `dist/manifest.json` so pages may load them. There are two helpers in `scripts/`:
 
 - `scripts/update-dist-manifest-importmap-hash.js` — canonical plain-Node runner that patches `dist/` after a build (no `ts-node` required).

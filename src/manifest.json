@@ -12,7 +12,7 @@
   },
   "options_ui": {
     "open_in_tab": true,
-    "page": "options/index.html"
+    "page": "memory-optimizer/memory-optimizer.html"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'sha256-YutcAMQdtaoooAoDH9xAgRqaOnfsRORzv8+6W9iWv+8='; object-src 'self'"
@@ -35,6 +35,16 @@
     },
     {
       "resources": ["stealth-tab/stealth-tab.html"],
+      "matches": []
+    }
+    ,
+    {
+      "resources": ["memory-optimizer/memory-optimizer.html"],
+      "matches": []
+    }
+    ,
+    {
+      "resources": ["options/index.html"],
       "matches": []
     }
   ],
